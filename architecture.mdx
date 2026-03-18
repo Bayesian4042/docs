@@ -1,0 +1,61 @@
+---
+title: "Architecture overview"
+description: "High-level system architecture for the Gema platform"
+---
+
+Gema is composed of three main surfaces — the **Tesigo mobile app** (patient-facing), the **web dashboard** (clinic staff), and the **backend** (NestJS API + AI pipeline) — all backed by MongoDB and a set of external integrations.
+
+![High Level Architecture](backend/design/high-level-architecture.png)
+
+## System surfaces
+
+<CardGroup cols={3}>
+  <Card title="Tesigo mobile app" icon="mobile">
+    Patient-facing app. OTP authentication. Real-time AI chat via the backend API. Receives push notifications via Firebase.
+  </Card>
+  <Card title="Web dashboard" icon="display">
+    Next.js app for clinic staff. Manage companions, patients, conversations, content library, and settings. JWT auth via NextAuth.
+  </Card>
+  <Card title="Backend API" icon="server">
+    NestJS REST API. Owns all business logic, AI orchestration, queue management, and multi-tenancy enforcement.
+  </Card>
+</CardGroup>
+
+## Data flow
+
+```
+Patient (Tesigo app)
+  │
+  ▼
+Backend API (NestJS)
+  ├── Auth (OTP → JWT)
+  ├── Conversation handler
+  │     ├── Intent classification (GPT-4.1-mini)
+  │     ├── RAG retrieval (MongoDB $vectorSearch)
+  │     └── Main agent (GPT-4.1 + ToolLoopAgent)
+  ├── Queue (BullMQ + Redis)
+  │     ├── Scheduled follow-up messages
+  │     └── Appointment reminders
+  └── External services
+        ├── Twilio (WhatsApp / SMS)
+        ├── Firebase (push notifications)
+        └── AWS S3 (file storage)
+```
+
+## Multi-tenancy
+
+Every entity in the system carries a `clinicId`. The `AbilityGuard` (CASL) enforces that staff can only read and write records belonging to their own clinic. `SUPER_ADMIN` users bypass this restriction for cross-clinic operations such as protocol distribution and clinic management.
+
+## Key architectural properties
+
+| Property | Approach |
+|----------|----------|
+| **Multi-tenancy** | `clinicId` on all entities, enforced by CASL `AbilityGuard` |
+| **AI compliance** | System-prompted to verbatim retrieval only — no free-form medical advice |
+| **Async processing** | BullMQ + Redis for scheduled messages, reminders, and data ingestion |
+| **Vector search** | MongoDB Atlas `$vectorSearch` — no separate vector DB needed |
+| **Domain isolation** | DDD bounded contexts — each NestJS module owns its domain |
+
+<Card title="Software architecture" icon="sitemap" href="/software-architecture">
+  See how the backend is structured with domain-driven design, bounded contexts, use cases, and the repository pattern.
+</Card>

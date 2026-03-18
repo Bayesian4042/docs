@@ -1,0 +1,70 @@
+---
+title: "What is Gema"
+description: "A multi-tenant clinic patient support platform powered by AI companions"
+---
+
+Gema is a **multi-tenant clinic patient support platform**. Clinics onboard onto the platform, configure AI-powered companions (chatbots), and assign them to patients. Patients interact with the AI via the **Tesigo mobile app**. Clinic staff manage everything through a **web dashboard**.
+
+<Warning>
+  The AI strictly retrieves information from curated plans and knowledge bases — it does **not** give medical advice.
+</Warning>
+
+## How it works
+
+<Steps>
+  <Step title="Clinic onboards">
+    A clinic joins the platform, configures its branding, AI settings, and notification preferences.
+  </Step>
+  <Step title="Staff build companions">
+    Clinic staff create AI companions — each with a system prompt, linked knowledge bases, treatment plans, follow-up schedules, and intent shortcuts.
+  </Step>
+  <Step title="Companion assigned to patient">
+    A companion is assigned to a specific patient. At assignment time, schedules and plan links are snapshotted so later edits don't affect the active companion.
+  </Step>
+  <Step title="Patient interacts via Tesigo">
+    The patient uses the Tesigo mobile app to chat with the AI. The AI retrieves relevant content and collects symptom check-ins — no free-form medical advice.
+  </Step>
+  <Step title="Staff review and grade">
+    Clinic staff monitor conversations, grade them (BLUE / YELLOW / RED), and send direct messages when needed.
+  </Step>
+</Steps>
+
+## Key concepts
+
+<CardGroup cols={2}>
+  <Card title="Companion (Behavior)" icon="robot">
+    The core unit — an AI configuration tied to a single patient. Includes system prompt, knowledge base links, plan links, follow-up schedules, and intent shortcuts.
+  </Card>
+  <Card title="Knowledge Base" icon="book">
+    Clinic-curated articles chunked and embedded for RAG retrieval. The AI answers only from this content.
+  </Card>
+  <Card title="Treatment Plan" icon="file-medical">
+    Structured patient plans with embedded content. Linked to companions and optionally bundled with Shopify product packages.
+  </Card>
+  <Card title="Conversation" icon="comments">
+    A thread between a patient and their companion (plus direct staff messages). Graded and monitored by clinic staff.
+  </Card>
+</CardGroup>
+
+## Explore the docs
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/architecture">
+    High-level system architecture diagram and component overview.
+  </Card>
+  <Card title="Tech stack" icon="layer-group" href="/tech-stack">
+    Every technology used across frontend, backend, AI, and infrastructure.
+  </Card>
+  <Card title="AI pipeline" icon="microchip" href="/ai-pipeline">
+    How intent classification, RAG retrieval, and the main agent work together.
+  </Card>
+  <Card title="Data model" icon="database" href="/data-model">
+    Core entities and their relationships.
+  </Card>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Auth mechanisms for the dashboard, mobile app, and WhatsApp.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations">
+    Twilio, Shopify, Firebase, AWS S3, and more.
+  </Card>
+</CardGroup>

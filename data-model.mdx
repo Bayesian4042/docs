@@ -1,0 +1,106 @@
+---
+title: "Data model"
+description: "Core entities and their relationships in the Gema platform"
+---
+
+<Card title="ERD diagram" icon="diagram-project" href="https://dbdiagram.io/d/69badab478c6c4bc7a16b484">
+  View the full entity relationship diagram on dbdiagram.io
+</Card>
+
+## Core entities
+
+### Clinic
+The top-level tenant. Every other entity belongs to a clinic.
+
+**Key fields:** branding, AI settings, notification preferences, medical source domains, roles configuration.
+
+---
+
+### User
+A clinic staff member with role-based access.
+
+**Roles:** `SUPER_ADMIN` · `CLINIC_ADMIN` · `CLINIC_STAFF`
+
+**Auth:** JWT with access and refresh tokens.
+
+---
+
+### Patient
+Identified by phone number and country code.
+
+**Auth:** OTP-based (SMS) for the Tesigo mobile app. Stores Expo push tokens for push notifications.
+
+---
+
+### Behavior (Companion)
+The core unit of the platform. A companion configuration assigned to a single patient.
+
+**Contains:**
+- System prompt (AI rules)
+- Knowledge base references
+- Plan links
+- Follow-up schedules
+- Intent shortcuts
+
+**Snapshots:** when assigned, `followUpSnapshot`, `planLinksSnapshot`, and `intentShortcutComboSnapshot` are written to the `Behavior` record so later library edits don't affect active companions.
+
+**Types:** standard companion, template, or protocol.
+
+---
+
+### Conversation
+Ties a patient, a behavior, and a clinic together for a given channel.
+
+**Key:** `[behaviorId, patientId, clinicId, channel]`
+
+**Channels:** `tesigo` (mobile app), `whatsapp`
+
+**Grading:** `BLUE` (normal) · `YELLOW` (watch) · `RED` (urgent)
+
+**Stores:** `aiConversation[]` and `doctorConversation[]` as JSON value objects.
+
+---
+
+### KnowledgeBase / KbChunk
+Clinic knowledge articles chunked into smaller pieces. Each `KbChunk` stores a `Float[]` vector embedding used for MongoDB `$vectorSearch` RAG retrieval.
+
+---
+
+### PlanLink / PlanChunk
+Treatment plans with embedded content. `PlanChunk` stores vector embeddings for RAG retrieval. Plans can be linked to `Package` records for Shopify product bundles.
+
+---
+
+### Package / PackageProduct
+Product bundles sourced from Shopify. Linked to treatment plans. `PackageProduct` stores a pricing snapshot at the time of linking.
+
+---
+
+### ScheduledMessage
+A queued follow-up message with lifecycle tracking.
+
+**Statuses:** `PENDING` → `SENT` / `FAILED` / `CANCELLED`
+
+**Trigger types:** time relative to companion share date (periodic) or absolute date (event-based).
+
+---
+
+### Appointment
+A patient appointment with configurable reminder scheduling via BullMQ.
+
+**Fields:** `reminderStatus`, reminder offset (configured per clinic, e.g. 1 day before).
+
+---
+
+## Entity ownership
+
+| Aggregate Root | Owned entities |
+|---------------|----------------|
+| **Behavior** | `BehaviorPlanLink`, `ScheduledMessage`, `Appointment`, snapshots (JSON) |
+| **Clinic** | `Bot`, `ClinicCategory`, `Favorite` |
+| **Patient** | `Cart` → `CartItem` |
+| **KnowledgeBase** | `KbChunk` |
+| **PlanLink** | `PlanChunk`, `PlanLinkPackage` |
+| **Package** | `PackageProduct` |
+| **FollowUpMessage** | `FollowUpMessageItem` |
+| **Conversation** | `aiConversation[]`, `doctorConversation[]` (JSON value objects) |

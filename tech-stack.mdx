@@ -1,0 +1,78 @@
+---
+title: "Tech stack"
+description: "Every technology used across the Gema platform"
+---
+
+## Frontend
+
+| Technology | Role |
+|-----------|------|
+| Next.js 16, React 19 | Web dashboard framework |
+| TypeScript | Type safety across the stack |
+| Tailwind CSS | Utility-first styling |
+| shadcn/ui (Radix) | Accessible component library |
+| TanStack Query | Server state and data fetching |
+| Zustand | Client state management |
+| React Hook Form | Form handling and validation |
+| i18next | Internationalization |
+
+## Backend
+
+| Technology | Role |
+|-----------|------|
+| NestJS 10 | API framework with DI and modular architecture |
+| TypeScript | Type safety across the stack |
+| Prisma 6 | ORM and schema management |
+| Passport JWT | Authentication middleware |
+
+## Database
+
+| Technology | Role |
+|-----------|------|
+| MongoDB | Primary database (with Prisma ORM) |
+| MongoDB Atlas `$vectorSearch` | Vector similarity search for RAG retrieval — no separate vector DB |
+
+## AI
+
+### LLMs
+
+<Tabs>
+  <Tab title="Proprietary">
+    | Model | Role |
+    |-------|------|
+    | OpenAI GPT-4.1 | Main agent — plan/educational retrieval and symptom check-in collection |
+    | OpenAI GPT-4.1-mini | Intent classification (greeting / product / appointment / other) |
+    | Anthropic Claude | Alternative model, selectable via `ModelType` enum |
+    | Google Gemini | Alternative model, selectable via `ModelType` enum |
+  </Tab>
+  <Tab title="Open source">
+    Mistral, LLaMA, and other self-hosted models are pluggable via the **Portkey AI** gateway. Swapping providers requires only a config change — no code changes.
+  </Tab>
+</Tabs>
+
+### Embeddings and SDK
+
+| Technology | Role |
+|-----------|------|
+| OpenAI `text-embedding-3-small` | Generates embeddings stored as `Float[]` on `KbChunk` and `PlanChunk` |
+| Vercel AI SDK | `ToolLoopAgent`, `streamText`, `generateText`, `embed` |
+
+## Infrastructure and services
+
+| Service | Role |
+|---------|------|
+| BullMQ + Redis | Job queue — scheduled messages, reminders, async data ingestion |
+| Twilio | WhatsApp inbound webhook, outbound messaging, SMS notifications |
+| Firebase | Push notifications to the Tesigo mobile app |
+| AWS S3 | File storage — knowledge base attachments, plan files, clinic assets |
+| Firecrawl | Web scraping for URL-based knowledge base ingestion |
+| Shopify API | Product catalog sync, pricing snapshots, patient cart and checkout |
+| Airtable | Legacy behavior import and sync |
+| PostHog | Product analytics |
+
+## CI/CD
+
+| Technology | Role |
+|-----------|------|
+| GitHub Actions | CI pipeline on a self-hosted runner |
+| pnpm | Package manager |

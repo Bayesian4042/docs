@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Gema",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -11,38 +11,37 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Technical design",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Overview",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "overview",
+              "architecture",
+              "tech-stack"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "data-model",
+              "ai-pipeline",
+              "authentication"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Backend",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "software-architecture",
+              "background-jobs",
+              "integrations",
+              "design-decisions"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Frontend",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "frontend-pages"
             ]
           }
         ]

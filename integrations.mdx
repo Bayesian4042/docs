@@ -1,0 +1,54 @@
+---
+title: "Integrations"
+description: "External services used by the Gema platform"
+---
+
+## Twilio
+
+**Purpose:** WhatsApp inbound webhook + outbound messaging, SMS notifications
+
+- Incoming WhatsApp messages arrive via a public webhook. The patient is resolved from the incoming phone number.
+- Outbound WhatsApp messages are sent for AI responses and scheduled follow-ups.
+- SMS is used for OTP delivery during patient authentication and for SMS-channel notifications.
+
+## Shopify
+
+**Purpose:** Product catalog, patient cart, and checkout
+
+- Product catalog is synced from a clinic's Shopify store.
+- Pricing is snapshotted at the time of linking to a plan (`PackageProduct`).
+- Patients can add products to a cart and proceed to checkout from within the Tesigo app.
+
+## Firebase
+
+**Purpose:** Push notifications to the Tesigo mobile app
+
+- Expo push tokens are stored on the `Patient` record.
+- Firebase Cloud Messaging (FCM) delivers push notifications for new messages, reminders, and alerts.
+
+## AWS S3
+
+**Purpose:** File storage
+
+All binary assets are stored in S3:
+- Knowledge base file attachments
+- Treatment plan files
+- Clinic branding assets (logo, etc.)
+
+## Firecrawl
+
+**Purpose:** Web scraping for URL-based knowledge base ingestion
+
+When a staff member provides a URL as a knowledge base source, Firecrawl scrapes and extracts the text content. The result is then chunked and embedded asynchronously.
+
+## Airtable
+
+**Purpose:** Legacy behavior import and sync
+
+Used for migrating and syncing companion configurations from a legacy Airtable-based workflow. Being phased out as the platform matures.
+
+## PostHog
+
+**Purpose:** Product analytics
+
+Tracks feature usage, user flows, and platform events across the web dashboard to inform product decisions.

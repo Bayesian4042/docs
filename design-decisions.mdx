@@ -1,0 +1,65 @@
+---
+title: "Key design decisions"
+description: "Architectural choices and the reasoning behind them"
+---
+
+## Snapshot pattern for companion assignment
+
+When a companion is assigned to a patient, three snapshots are written to the `Behavior` record:
+
+- `followUpSnapshot` — the follow-up schedule at assignment time
+- `planLinksSnapshot` — linked treatment plans at assignment time
+- `intentShortcutComboSnapshot` — intent shortcuts at assignment time
+
+**Why:** This decouples the active companion's runtime behavior from later edits made to the content library. A staff member can update a knowledge base or plan without changing what an already-assigned patient experiences.
+
+---
+
+## Single-patient behaviors
+
+Each `Behavior` record now owns exactly one patient via a direct `patientId` field.
+
+**Why:** The previous many-to-many model (`BehaviorAssignment`) added complexity without meaningful benefit. Most companions are created specifically for one patient. The `BehaviorAssignment` table is deprecated and being removed.
+
+---
+
+## Vector search on MongoDB
+
+Embeddings (`Float[]`) are stored directly on `KbChunk` and `PlanChunk` records. Retrieval uses MongoDB Atlas `$vectorSearch`.
+
+**Why:** Avoids the operational overhead of a separate vector database (e.g. Pinecone, Weaviate). Since the rest of the data already lives in MongoDB, co-locating vectors keeps the infrastructure footprint small and queries fast.
+
+---
+
+## Multi-channel conversations
+
+The same `Behavior` supports both WhatsApp and Tesigo conversations. Each conversation is uniquely keyed by `[behaviorId, patientId, clinicId, channel]`.
+
+**Why:** A patient may interact via WhatsApp before or alongside the Tesigo app. Keying by channel lets both threads exist independently under the same companion, without polluting one thread with messages from another.
+
+---
+
+## Strict AI compliance
+
+The main agent is system-prompted to:
+1. Only reproduce content verbatim from retrieved chunks — no paraphrasing
+2. Collect symptoms via a fixed 5-step checklist
+3. Refuse all medical advice with hardcoded response templates
+
+**Why:** Gema operates in a clinical context. Free-form AI generation of medical information carries regulatory and safety risk. Strict verbatim retrieval ensures that only clinician-authored content reaches patients.
+
+---
+
+## Portkey AI gateway for open-source models
+
+Open-source LLMs (Mistral, LLaMA, etc.) are pluggable via **Portkey AI**. Swapping providers requires only a config change — no code changes.
+
+**Why:** The LLM landscape evolves quickly. Abstracting provider selection behind `ModelType` and Portkey means the platform can adopt new models as they become available without rearchitecting the AI pipeline.
+
+---
+
+## DDD with use case classes
+
+Each domain operation is a dedicated use case class rather than a method on a shared service.
+
+**Why:** Bloated service classes become bottlenecks for testing, onboarding, and parallel development. Dedicated use case classes are independently testable, have a single responsibility, and make the intent of each operation explicit from the file name alone.

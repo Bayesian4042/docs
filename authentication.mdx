@@ -1,0 +1,56 @@
+---
+title: "Authentication"
+description: "Auth mechanisms for the web dashboard, Tesigo mobile app, and WhatsApp"
+---
+
+Gema uses different authentication mechanisms for each surface.
+
+## Auth by surface
+
+<Tabs>
+  <Tab title="Web dashboard">
+    **NextAuth credentials provider** → backend issues a JWT (access token + refresh token).
+
+    Role-based access control is enforced via **CASL** `AbilityGuard`. Every API request is checked against the user's role and `clinicId`.
+
+    **Roles:**
+
+    | Role | Access |
+    |------|--------|
+    | `SUPER_ADMIN` | Full access across all clinics. Bypasses `clinicId` scoping. |
+    | `CLINIC_ADMIN` | Full access within their clinic. |
+    | `CLINIC_STAFF` | Read/write access within their clinic with restricted admin actions. |
+  </Tab>
+  <Tab title="Tesigo mobile app">
+    **OTP-based auth** via SMS (Twilio).
+
+    1. Patient enters their phone number and country code.
+    2. An OTP is sent via SMS.
+    3. On verification, the backend (`AppAuthModule`) issues a JWT.
+
+    Patients are uniquely identified by `phone + countryCode`. Push notification tokens (Expo) are stored on the `Patient` record after login.
+  </Tab>
+  <Tab title="WhatsApp">
+    WhatsApp messages arrive via a **public Twilio webhook** — no auth on the incoming request.
+
+    The patient is resolved from the incoming phone number and matched to an existing `Patient` record. If no match is found, the message is dropped or queued for manual review depending on clinic configuration.
+  </Tab>
+</Tabs>
+
+## Token lifecycle
+
+| Token | Lifetime | Storage |
+|-------|----------|---------|
+| Access token | Short-lived | In-memory / HTTP-only cookie |
+| Refresh token | Long-lived | Stored on `User` record in MongoDB |
+
+Refresh tokens are rotated on use. Revocation is handled by clearing the stored token on the `User` record.
+
+## Multi-tenancy enforcement
+
+All API endpoints are protected by the CASL `AbilityGuard`. It checks:
+
+1. The user's role (`SUPER_ADMIN`, `CLINIC_ADMIN`, `CLINIC_STAFF`)
+2. The `clinicId` on the requested resource matches the user's `clinicId`
+
+`SUPER_ADMIN` bypasses the `clinicId` check and can operate across all clinics.

@@ -1,0 +1,65 @@
+---
+title: "Background jobs"
+description: "Async job processing with BullMQ and Redis"
+---
+
+Gema uses **BullMQ + Redis** for all async and scheduled work. There are three categories of background jobs.
+
+## Scheduled follow-up messages
+
+When a companion is assigned to a patient, follow-up messages are queued based on the companion's `followUpSnapshot`.
+
+**Two scheduling modes:**
+
+| Mode | Trigger |
+|------|---------|
+| **Periodic** | Time relative to the companion's share date (e.g. "3 days after assignment") |
+| **Event-based** | Absolute date/time |
+
+Each job creates or updates a `ScheduledMessage` record.
+
+**`ScheduledMessage` statuses:**
+
+```
+PENDING → SENT
+       → FAILED
+       → CANCELLED
+```
+
+Messages are cancelled when a companion's follow-up snapshot is updated — the old jobs are cancelled and new ones are re-queued from the updated snapshot.
+
+## Appointment reminders
+
+When an appointment is created, a reminder job is queued based on the clinic's reminder configuration (e.g. 1 day before the appointment).
+
+The `Appointment.reminderStatus` field tracks whether the reminder was sent, failed, or is still pending.
+
+## Data ingestion
+
+File uploads and URL ingestion (via Firecrawl) are processed asynchronously:
+
+<Steps>
+  <Step title="Upload or scrape">
+    Staff upload a file (PDF, etc.) or provide a URL to the knowledge base or plan editor.
+  </Step>
+  <Step title="Chunking">
+    The content is split into smaller chunks with overlap to preserve context across chunk boundaries.
+  </Step>
+  <Step title="Embedding">
+    Each chunk is embedded using OpenAI `text-embedding-3-small`.
+  </Step>
+  <Step title="Storage">
+    Chunks and their `Float[]` embeddings are stored as `KbChunk` or `PlanChunk` records in MongoDB, ready for `$vectorSearch` retrieval.
+  </Step>
+</Steps>
+
+## Domain events via BullMQ
+
+Rather than coupling modules directly, state changes publish jobs to queues:
+
+| Trigger | Queue job |
+|---------|-----------|
+| Companion assigned to patient | Schedule follow-up messages |
+| Appointment created | Schedule appointment reminder |
+| Knowledge base file uploaded | Trigger chunk + embed pipeline |
+| Companion follow-up snapshot updated | Cancel + reschedule `ScheduledMessage` jobs |

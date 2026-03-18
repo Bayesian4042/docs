@@ -1,0 +1,88 @@
+---
+title: "Software architecture"
+description: "Domain-driven design, bounded contexts, use cases, and the repository pattern"
+---
+
+The Gema backend is structured around **domain-driven design (DDD)**. Each NestJS module owns its domain, exposes its own repository and service interface, and avoids leaking internals to other modules.
+
+![Domain Driven Design](backend/design/domain-driven.png)
+
+## Bounded contexts
+
+Each bounded context maps to a NestJS module:
+
+| Context | Responsibility |
+|---------|---------------|
+| **Behavior** | Companion lifecycle — create, assign, snapshot, delete |
+| **Clinic** | Tenant management, branding, AI config, notification settings |
+| **Patient** | Patient identity, auth, cart |
+| **Content library** | Knowledge bases, plans, follow-ups, intent shortcuts, packages |
+| **Conversation** | Chat threads, AI responses, grading, doctor messages |
+| **Scheduling** | BullMQ jobs for follow-ups, reminders, and data ingestion |
+| **Auth** | JWT, OTP, CASL ability definitions |
+
+## Use case layer
+
+Each domain operation is a **dedicated use case class** rather than a method on a bloated service. This keeps individual operations small, testable, and independently deployable.
+
+```
+behavior/use-cases/
+  create-companion.use-case.ts
+  update-companion.use-case.ts
+  copy-companion.use-case.ts
+  delete-companion.use-case.ts
+
+content-library/use-cases/
+  knowledge-base/   → create, update, delete, get, visibility
+  followups/        → create, update, copy, delete, get
+  plans/            → create, update, copy, delete, get
+  packages/         → create, update, copy, delete, get, visibility
+  intent-shortcut-combo/
+```
+
+## Repository pattern
+
+Repositories are defined as **interfaces** and injected via NestJS dependency injection. Prisma implementations live alongside the interface:
+
+```
+content-library/repository/
+  followup-message.interface.ts            ← domain contract
+  followup-message-prisma.repository.ts   ← Prisma implementation
+  plan-link.interface.ts
+  package-prisma.repository.ts
+```
+
+This keeps domain logic decoupled from the persistence layer. Swapping the database or ORM only requires a new implementation of the interface — no changes to use cases or services.
+
+## Domain events via BullMQ
+
+Rather than coupling modules directly (e.g. the Behavior module calling into the Scheduling module), state changes publish jobs to BullMQ queues:
+
+| Trigger | Queue job |
+|---------|-----------|
+| Companion assigned to patient | Schedule follow-up messages |
+| Appointment created | Schedule appointment reminder |
+| Knowledge base file uploaded | Trigger chunk + embed pipeline |
+| Companion follow-up snapshot updated | Cancel + reschedule `ScheduledMessage` jobs |
+
+## Multi-tenancy
+
+Every entity carries `clinicId`. The CASL `AbilityGuard` validates every request:
+
+- **`CLINIC_STAFF` / `CLINIC_ADMIN`** — can only access records where `clinicId` matches their own.
+- **`SUPER_ADMIN`** — bypasses `clinicId` scoping for cross-clinic operations (protocol distribution, clinic management).
+
+## Aggregate roots
+
+Each aggregate root owns its child entities and value objects. No child entity is accessed directly from outside its aggregate.
+
+| Aggregate root | Owned entities / value objects |
+|---------------|-------------------------------|
+| **Behavior** | `BehaviorPlanLink`, `ScheduledMessage`, `Appointment`, snapshots (JSON) |
+| **Clinic** | `Bot`, `ClinicCategory`, `Favorite` |
+| **Patient** | `Cart` → `CartItem` |
+| **KnowledgeBase** | `KbChunk` |
+| **PlanLink** | `PlanChunk`, `PlanLinkPackage` |
+| **Package** | `PackageProduct` |
+| **FollowUpMessage** | `FollowUpMessageItem` |
+| **Conversation** | `aiConversation[]`, `doctorConversation[]` (JSON value objects) |

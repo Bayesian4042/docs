@@ -1,0 +1,59 @@
+---
+title: "Frontend pages"
+description: "All web dashboard pages and their purpose"
+---
+
+The web dashboard is a Next.js app for clinic staff. Pages are grouped into five areas.
+
+## Dashboard
+
+| Page | Path | Description |
+|------|------|-------------|
+| Dashboard | `/` | Clinic stats and activity overview |
+
+## Workspace
+
+Manage companions and their assignments to patients.
+
+| Page | Path | Description |
+|------|------|-------------|
+| Companions | `/companion` | List, create, and edit companions (behaviors) |
+| Assigned companions | `/assigned-companion` | Companions currently assigned to patients |
+| Protocols | `/protocol` | Cross-clinic protocol templates — `SUPER_ADMIN` only |
+
+## Patient management
+
+| Page | Path | Description |
+|------|------|-------------|
+| Patients | `/patient` | Patient list and individual patient detail views |
+| Conversations | `/conversation` | AI and doctor conversation threads with grading (BLUE / YELLOW / RED) |
+
+## Content library
+
+The library is shared across the clinic. Content here is referenced by companions.
+
+| Page | Path | Description |
+|------|------|-------------|
+| AI rules | `/library/ai-rules` | System prompts used by companions |
+| Knowledge base | `/library/knowledge-base` | Knowledge base articles for RAG retrieval |
+| Follow-ups | `/library/followups` | Follow-up message templates |
+| Intent shortcuts | `/library/intent-shortcut-combo` | Intent shortcut groups |
+| Plans | `/library/plans` | Treatment plans |
+| OTC packages | `/library/otc-lists` | OTC product packages sourced from Shopify |
+| Categories | `/library/categories` | Content categories — `CLINIC_ADMIN` and above only |
+
+## Setup
+
+| Page | Path | Description |
+|------|------|-------------|
+| Settings | `/setup/settings` | Clinic settings, AI configuration, notification preferences |
+| Members | `/setup/members` | Team member management and role assignment |
+
+## Admin-only
+
+Available to `SUPER_ADMIN` only.
+
+| Page | Path | Description |
+|------|------|-------------|
+| Clinics | `/clinic` | Create and manage clinic tenants |
+| Notifications | `/notifications` | Platform-wide notification logs |

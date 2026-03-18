@@ -1,0 +1,84 @@
+---
+title: "AI pipeline"
+description: "How intent classification, RAG retrieval, and the main agent work together"
+---
+
+Every patient message flows through a three-stage pipeline before a response is generated.
+
+![Chat Agent Pipeline](backend/design/ai-pipeline.png)
+
+## Pipeline stages
+
+<Steps>
+  <Step title="Intent classification">
+    **Model:** GPT-4.1-mini
+
+    The incoming message is classified into one of four categories:
+
+    | Intent | Description |
+    |--------|-------------|
+    | `greeting` | Salutation or small talk — skips RAG retrieval |
+    | `product-related` | Questions about products or packages |
+    | `appointment-related` | Questions about appointments or scheduling |
+    | `other` | General queries — goes through full RAG retrieval |
+  </Step>
+
+  <Step title="RAG retrieval">
+    **Skipped for:** `greeting` intent
+
+    For all other intents, the query is embedded using `text-embedding-3-small` and a MongoDB `$vectorSearch` query finds the most relevant chunks from:
+    - The behavior's linked **knowledge bases** (`KbChunk`)
+    - The behavior's linked **treatment plans** (`PlanChunk`)
+
+    Retrieved chunks are passed as context to the main agent.
+  </Step>
+
+  <Step title="Main agent">
+    **Model:** GPT-4.1
+    **SDK:** Vercel AI SDK `ToolLoopAgent` (up to 10 steps)
+
+    The agent operates under two strict missions enforced by the system prompt:
+
+    1. **Plan and educational info retrieval** — the agent reproduces content verbatim from the retrieved chunks. No paraphrasing or summarizing that could change clinical meaning.
+    2. **Symptom check-in collection** — the agent follows a fixed 5-step flow to collect patient symptom data.
+
+    All requests for medical advice are refused using hardcoded response templates.
+  </Step>
+</Steps>
+
+## Tool use
+
+The main agent can call tools during its loop:
+
+| Tool | Description |
+|------|-------------|
+| Web search | Restricted to clinic-approved medical source domains only |
+
+Additional tools can be registered per companion configuration.
+
+## AI compliance
+
+<Warning>
+  The AI is explicitly system-prompted to **never generate free-form medical advice**. All responses are either verbatim content retrieval or templated refusals.
+</Warning>
+
+This is enforced at two levels:
+
+1. **System prompt** — instructs the model to refuse medical advice and only reproduce retrieved content.
+2. **Tool restrictions** — web search is scoped to a clinic-configured allow-list of medical domains.
+
+## Model selection
+
+All model references in the codebase use a `ModelType` enum. This makes it possible to swap providers without touching business logic:
+
+```typescript
+enum ModelType {
+  GPT_4_1,        // main agent
+  GPT_4_1_MINI,   // intent classification
+  CLAUDE,         // alternative
+  GEMINI,         // alternative
+  // open-source models via Portkey AI gateway
+}
+```
+
+Open-source models (Mistral, LLaMA, etc.) are pluggable via **Portkey AI** — only a provider config swap is needed, no code changes.
