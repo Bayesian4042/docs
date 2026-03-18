@@ -1,97 +1,70 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "What is Gema"
+description: "A multi-tenant clinic patient support platform powered by AI companions"
 ---
 
-## Setting up
+Gema is a **multi-tenant clinic patient support platform**. Clinics onboard onto the platform, configure AI-powered companions (chatbots), and assign them to patients. Patients interact with the AI via the **Tesigo mobile app**. Clinic staff manage everything through a **web dashboard**.
 
-Get your documentation site up and running in minutes.
+<Warning>
+  The AI strictly retrieves information from curated plans and knowledge bases — it does **not** give medical advice.
+</Warning>
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## How it works
 
-## Make it yours
+<Steps>
+  <Step title="Clinic onboards">
+    A clinic joins the platform, configures its branding, AI settings, and notification preferences.
+  </Step>
+  <Step title="Staff build companions">
+    Clinic staff create AI companions — each with a system prompt, linked knowledge bases, treatment plans, follow-up schedules, and intent shortcuts.
+  </Step>
+  <Step title="Companion assigned to patient">
+    A companion is assigned to a specific patient. At assignment time, schedules and plan links are snapshotted so later edits don't affect the active companion.
+  </Step>
+  <Step title="Patient interacts via Tesigo">
+    The patient uses the Tesigo mobile app to chat with the AI. The AI retrieves relevant content and collects symptom check-ins — no free-form medical advice.
+  </Step>
+  <Step title="Staff review and grade">
+    Clinic staff monitor conversations, grade them (BLUE / YELLOW / RED), and send direct messages when needed.
+  </Step>
+</Steps>
 
-Design a docs site that looks great and empowers your users.
+## Key concepts
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Companion (Behavior)" icon="robot">
+    The core unit — an AI configuration tied to a single patient. Includes system prompt, knowledge base links, plan links, follow-up schedules, and intent shortcuts.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Knowledge Base" icon="book">
+    Clinic-curated articles chunked and embedded for RAG retrieval. The AI answers only from this content.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Treatment Plan" icon="file-medical">
+    Structured patient plans with embedded content. Linked to companions and optionally bundled with Shopify product packages.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Conversation" icon="comments">
+    A thread between a patient and their companion (plus direct staff messages). Graded and monitored by clinic staff.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Explore the docs
 
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/architecture">
+    High-level system architecture diagram and component overview.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Tech stack" icon="layer-group" href="/tech-stack">
+    Every technology used across frontend, backend, AI, and infrastructure.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="AI pipeline" icon="microchip" href="/ai-pipeline">
+    How intent classification, RAG retrieval, and the main agent work together.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Data model" icon="database" href="/data-model">
+    Core entities and their relationships.
   </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Auth mechanisms for the dashboard, mobile app, and WhatsApp.
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations">
+    Twilio, Shopify, Firebase, AWS S3, and more.
+  </Card>
+</CardGroup>
